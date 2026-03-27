@@ -1,26 +1,44 @@
-import {Component, OnInit} from '@angular/core';
-import {Course} from "../model/course";
-import {interval, Observable, of, timer} from 'rxjs';
-import {catchError, delayWhen, map, retryWhen, shareReplay, tap} from 'rxjs/operators';
-
+import { Component, OnInit } from "@angular/core";
+import { Course } from "../model/course";
+import { interval, Observable, of, timer } from "rxjs";
+import {
+  catchError,
+  delayWhen,
+  map,
+  retryWhen,
+  shareReplay,
+  tap,
+} from "rxjs/operators";
+import { createHttpObservable } from "../common/util";
 
 @Component({
-    selector: 'home',
-    templateUrl: './home.component.html',
-    styleUrls: ['./home.component.css'],
-    standalone: false
+  selector: "home",
+  templateUrl: "./home.component.html",
+  styleUrls: ["./home.component.css"],
+  standalone: false,
 })
 export class HomeComponent implements OnInit {
+  beginnersCourses$: Observable<Course[]>;
+  advancedCourses$: Observable<Course[]>;
+  constructor() {}
 
+  ngOnInit() {
+    const http$ = createHttpObservable("/api/courses");
 
-    constructor() {
+    const courses$: Observable<Course[]> = http$.pipe(
+      map((res) => Object.values(res["payload"])),
+    );
 
-    }
+    this.beginnersCourses$ = courses$.pipe(
+      map((courses) =>
+        courses.filter((course) => course.category == "BEGINNER"),
+      ),
+    );
 
-    ngOnInit() {
-
-
-
-    }
-
+    this.advancedCourses$ = courses$.pipe(
+      map((courses) =>
+        courses.filter((course) => course.category == "ADVANCED"),
+      ),
+    );
+  }
 }

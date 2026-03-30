@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { Course } from "../model/course";
+import { Course, CoursesResponse } from "../model/course";
 import { interval, Observable, of, timer } from "rxjs";
 import {
   catchError,
@@ -23,10 +23,13 @@ export class HomeComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    const http$ = createHttpObservable("/api/courses");
+    const http$: Observable<CoursesResponse> =
+      createHttpObservable("/api/courses");
 
-    const courses$: Observable<Course[]> = http$.pipe(
+    const courses$ = http$.pipe(
+      tap(() => console.log("HTTP request executed")),
       map((res) => Object.values(res["payload"])),
+      shareReplay(),
     );
 
     this.beginnersCourses$ = courses$.pipe(
